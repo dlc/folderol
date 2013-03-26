@@ -112,6 +112,11 @@ sub parse {
         XML::Feed->parse($file);
     };
 
+    unless ($p_feed) {
+        Folderol::Logger->error("Error parsing $file; skipping");
+        return;
+    }
+
     # Save the feed and the items in it
     my $feed_id = $self->db->save_feed({
         NAME     => ($feed->name or $p_feed->title),
