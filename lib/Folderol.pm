@@ -32,6 +32,7 @@ use Folderol::Destination;
 use Folderol::Feed;
 use Folderol::Fetcher;
 use Folderol::Logger;
+use POSIX qw(strftime);
 
 # ----------------------------------------------------------------------
 # new('/path/to/config.ini')
@@ -113,28 +114,28 @@ sub parse {
 
     # Save the feed and the items in it
     my $feed_id = $self->db->save_feed({
-        NAME     => $feed->name,
+        NAME     => ($feed->name or $p_feed->title),
         URL      => $feed->url,
         TITLE    => $p_feed->title,
-        ID       => $p_feed->id,
-        LINK     => $p_feed->link,
-        SELFLINK => $p_feed->self_link,
-        MODIFIED => $p_feed->modified,
-        TAGLINE  => $p_feed->tagline,
+        ID       => ($p_feed->id or $feed->url),
+        LINK     => ($p_feed->link or $feed->url),
+        SELFLINK => ($p_feed->self_link or undef),
+        MODIFIED => ($p_feed->modified or today()),
+        TAGLINE  => ($p_feed->tagline or undef),
     });
 
     for my $entry ($p_feed->entries) {
-        $self->db->save_entry({
+        $self->db->save_entry(
             FEED     => $feed_id,
             TITLE    => $entry->title,
             LINK     => $entry->link,
-            CONTENT  => $entry->content,
-            SUMMARY  => $entry->summary,
-            AUTHOR   => $entry->author,
-            ID       => $entry->id,
-            ISSUED   => $entry->issued,
-            MODIFIED => $entry->modified,
-        });
+            CONTENT  => ($entry->content->body or $entry->summary->body or $entry->title),
+            SUMMARY  => ($entry->summary->body or undef),
+            AUTHOR   => ($entry->author or undef),
+            ID       => ($entry->id or $entry->link),
+            ISSUED   => ($entry->issued or today()),
+            MODIFIED => ($entry->modified or $entry->issued or today()),
+        );
     }
 }
 
@@ -152,7 +153,7 @@ $name - Fetch and Aggregate RSS and Atom feeds
 
 Usage:
 
-  \$ $name [-h] [-V] [-f] [-g] /path/to/config.ini
+  \$ $name [-h] [-V] [-f] [-g] /path/to/config.yaml
 
 Parameters:
 
@@ -165,6 +166,9 @@ $name is Copyright (c) $COPYRIGHT by $AUTHOR.
 
 EOHELP
 }
+
+# Helper function
+sub today { strftime "%Y-%m-%dT%H:%M:%S", localtime time; }
 
 # ----------------------------------------------------------------------
 # AUTOLOAD - Make accessors easier. 
