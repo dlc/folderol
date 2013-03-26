@@ -140,6 +140,58 @@ sub parse {
 }
 
 # ----------------------------------------------------------------------
+# process($destination)
+#
+# Process data for $destination (a Folderol::Destination object)
+# ----------------------------------------------------------------------
+sub process {
+    my $self = shift;
+    my $dest = shift || return;
+    my $input = $dest->src;
+    my $output = $dest->dest;
+    my ($tt, $vars);
+
+    require Template;
+    $tt = Template->new($self->template_options);
+
+    my @entries = $self->db->entries($self->items_per_page);
+    $vars = {
+        site    => $self->top_level_variables,
+        entries => \@entries,
+    };
+
+    $tt->process($input, $vars, $output) || die $tt->error;
+}
+
+# ----------------------------------------------------------------------
+# top_level_vars()
+#
+# Producea a hash of variables from $self, excluding specifically
+# hidden things.
+# ----------------------------------------------------------------------
+sub top_level_variables {
+    my $self = shift;
+    my %vars = ();
+
+    for my $k (keys %$self) {
+        next if $k eq 'DBNAME';
+        next if $k eq 'LOG_LEVEL';
+        next if $k eq 'DB';
+        next if $k eq 'LOG_LEVEL';
+        next if $k eq 'CACHE_DIR';
+        next if $k eq 'INPUT';
+        next if $k eq 'OUTPUT';
+
+        my $v = $self->{ $k };
+        next if ref($v);
+
+        $vars{ lc $k } = $v;
+    }
+
+    return \%vars;
+}
+
+# ----------------------------------------------------------------------
 # help_message()
 #
 # Returns the help message
