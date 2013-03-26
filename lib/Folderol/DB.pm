@@ -81,10 +81,28 @@ sub save_feed {
 
     Folderol::Logger->debug("Saving feed '$name'");
 
-#    $sql = "SELECT feed AS feed_id FROM feed WHERE url = ?";
-#    my $exists = $db->selectrow_array($sql, undef, $url);
+    $sql = "SELECT feed AS feed_id FROM feed WHERE url = ?";
+    if ($feed_id = $db->selectrow_array($sql, undef, $url)) {
+        # Feed exists; UPDATE
+        $sql = "UPDATE feed
+                   SET name = ?, url = ?, title = ?, id = ?,
+                       link = ?, selflink = ?, modified = ?, tagline = ?
+                 WHERE feed = ?";
+        $db->do($sql, undef, $name, $url, $title, $id,
+                $link, $selflink, $modified, $tagline, $feed_id) || die $db->errstr;
+    }
+    else {
+        # Feed doesn't exist; INSERT
+        $sql = "INSERT INTO feed
+                (name, url, title, id, link, selflink, modified, tagline)
+                VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?)";
+        $db->do($sql, undef, $name, $url, $title, $id,
+                $link, $selflink, $modified, $tagline) || die $db->errstr;
+    }
 
-
+    $sql = "SELECT feed AS feed_id FROM feed WHERE url = ?";
+    $db->selectrow_array($sql, undef, $url);
 }
 
 # ----------------------------------------------------------------------
@@ -97,6 +115,8 @@ sub save_feed {
 sub save_entry {
     my $self = shift;
     my $data = (@_ && ref($_[0]) eq 'HASH') ? shift : { @_ };
+    my $db = $self->db;
+    my $sql;
 
     my $feed     = $data->{'FEED'};
     my $title    = $data->{'TITLE'};
@@ -106,12 +126,80 @@ sub save_entry {
     my $id       = $data->{'ID'};
     my $issued   = $data->{'ISSUED'};
     my $modified = $data->{'MODIFIED'};
+    my $author   = $data->{'AUTHOR'};
 
+    return unless ($title and $link);
     Folderol::Logger->debug("Saving entry '$title'");
     
-
+    $db->do("DELETE FROM entry WHERE link = ?", undef, $link);
+    $db->do("INSERT INTO entry
+             (feed, title, link, content, summary, id, issued, modified, author)
+             VALUES
+             (?, ?, ?, ?, ?, ?, ?, ?, ?)", undef,
+             $feed, $title, $link, $content, $summary, $id, $issued, $modified, $author)
+        || die $db->errstr;
 }
 
+# ----------------------------------------------------------------------
+# entries($num)
+#
+# Return the $num latest entries, as an array, sorted by issued date
+# descendingly.
+# ----------------------------------------------------------------------
+sub entries {
+    my $self = shift;
+    my $num = shift || 10;
+    my $db = $self->db;
+    my @entries;
+
+    my $sth = $db->prepare("
+        SELECT e.title AS entry_title,
+               e.link AS entry_link,
+               e.content AS entry_content,
+               e.summary AS entry_summary,
+               e.author AS entry_auth,
+               e.id as entry_id,
+               e.issued as entry_issued,
+               e.modified as entry_modified,
+               f.url AS feed_url,
+               f.name AS feed_name,
+               f.title AS feed_title,
+               f.id AS feed_id,
+               f.link AS feed_link,
+               f.selflink as feed_selflink,
+               f.modified AS feed_modified,
+               f.tagline AS feed_tagline
+          FROM entry e, feed f
+         WHERE f.feed = e.feed
+      ORDER BY e.issued desc
+         LIMIT $num
+    ");
+
+    $sth->execute;
+    while (my $row = $sth->fetchrow_hashref) {
+        my $e = { channel => { } };
+        for my $key (keys %$row) {
+            my ($table, $field) = split /_/, $key;
+            if ("feed" eq $table) {
+                $e->{ channel }->{ $field } = $row->{ $key };
+            }
+            else {
+                $e->{ $field } = $row->{ $key };
+            }
+        }
+
+        push @entries, $e;
+    }
+    $sth->finish;
+
+    return wantarray ? @entries : \@entries;
+}
+
+# ----------------------------------------------------------------------
+# DESTROY
+# 
+# Ensure that the db handle is correctly closed on exit
+# ----------------------------------------------------------------------
 sub DESTROY {
     my $self = shift;
     $self->{ DB }->disconnect
@@ -126,7 +214,7 @@ sub DESTROY {
 sub create {
     my $class = shift;
     return (
-        'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, self_link, modified, tagline)',
+        'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified, tagline)',
         'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, issued, modified)',
     );
 }
