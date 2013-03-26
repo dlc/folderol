@@ -108,10 +108,10 @@ sub extra_fields {
 
     return join " ",
         map {
-            my $k = $_;             $k =~ s/'//g;
+            my $n = $_;             $n =~ s/\s//g;
             my $v = $vars{ $_ };    $v =~ s/'//g;
             
-            "'$k'='$v'";
+            "$n='$v'";
         } keys %vars;
 }
 
