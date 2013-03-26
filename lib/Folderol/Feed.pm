@@ -35,7 +35,7 @@ sub new {
     bless {
         FETCHER => Folderol::Fetcher->new,
         FETCHED_FEED => undef,
-        %$data
+        map { uc($_) => $data->{ $_ } } keys %$data
     } => $class;
 }
 
