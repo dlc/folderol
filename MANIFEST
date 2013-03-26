@@ -1,0 +1,12 @@
+bin/folderol
+lib/Folderol.pm
+lib/Folderol/Config.pm
+lib/Folderol/DB.pm
+lib/Folderol/Destination.pm
+lib/Folderol/Feed.pm
+lib/Folderol/Fetcher.pm
+lib/Folderol/Logger.pm
+Makefile.PL
+MANIFEST
+MANIFEST.SKIP
+README

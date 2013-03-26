@@ -1,0 +1,6 @@
+folderol - A planet-like aggregator
+===================================
+
+`folderol` aggregates RSS and Atom feeds, and generates one or more output
+files as a side-effect.
+
