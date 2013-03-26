@@ -40,5 +40,5 @@ TODO
   [Planet]: http://planetplanet.org/
   [Venus]: http://www.intertwingly.net/code/venus/
   [sqlite]: http://sqlite.org/
-  [tt]: http://tt2.org/
+  [tt2]: http://tt2.org/
   [ttbook]: http://shop.oreilly.com/product/9780596004767.do
