@@ -34,8 +34,6 @@ $ME = basename($0);
 # Options:
 # -h Help
 # -V Version
-#
-# By default, folderol both fetches and generates
 # ----------------------------------------------------------------------
 getopts('hV');
 
