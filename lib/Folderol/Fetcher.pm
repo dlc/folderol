@@ -57,7 +57,7 @@ sub get {
     my $self = shift;
     my $url = shift || return;
 
-    my @cmd = (qw(curl -sSLk), $url);
+    my @cmd = (qw(curl -sSLk --connect-timeout 20), $url);
 
     `@cmd`;
 }
@@ -78,7 +78,7 @@ sub getstore {
     -d $dir || mkpath $dir;
 
     Folderol::Logger->debug("Storing $url as $file");
-    my @cmd = (qw(curl -sfLk -o), $file);
+    my @cmd = (qw(curl -sfLk --connect-timeout 10 -o), $file);
 
     if (-r $file) {
         push @cmd, '-z', $file;
