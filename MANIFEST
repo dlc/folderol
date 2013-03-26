@@ -9,4 +9,4 @@ lib/Folderol/Logger.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
-README
+README.md
