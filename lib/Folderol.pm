@@ -106,13 +106,13 @@ sub parse {
     my $feed = shift;
     my $file = $feed->fetched_feed || return;
 
-    my $p_feed = do {
+    my $p_feed = eval {
         require XML::Feed;
         Folderol::Logger->debug("Parsing $file");
         XML::Feed->parse($file);
     };
 
-    unless ($p_feed) {
+    if ($@ || ! $p_feed) {
         Folderol::Logger->error("Error parsing $file; skipping");
         return;
     }
