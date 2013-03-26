@@ -27,18 +27,21 @@ use strict;
 # ----------------------------------------------------------------------
 sub defaults {
     return (
-        NAME             => '',
-        LINK             => '',
-        INPUT            => '',
-        OUTPUT           => '',
-        CACHE_DIR        => '/tmp',
-        LOG_LEVEL        => 'ERROR',
-        OWNER_NAME       => '',
-        OWNER_EMAIL      => '',
-        ITEMS_PER_PAGE   => 100,
-        DBNAME           => glob("~/.folderol.db"),
-        TEMPLATE_MAP     => { },
-        TEMPLATE_OPTIONS => {
+        NAME                => '',
+        LINK                => '',
+        INPUT               => '',
+        OUTPUT              => '',
+        CACHE_DIR           => '/tmp',
+        LOG_LEVEL           => 'ERROR',
+        OWNER_NAME          => '',
+        OWNER_EMAIL         => '',
+        ITEMS_PER_PAGE      => 100,
+        DBNAME              => glob("~/.folderol.db"),
+        GENERATOR           => "Folderol",
+        GENERATOR_VERSION   => $Folderol::VERSION,
+        GENERATOR_URI       => "https://github.com/dlc/folderol",
+        TEMPLATE_MAP        => { },
+        TEMPLATE_OPTIONS    => {
             ABSOLUTE => 1,
         },
     );
