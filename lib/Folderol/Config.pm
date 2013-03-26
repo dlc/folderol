@@ -33,12 +33,22 @@ sub defaults {
         OUTPUT           => '',
         CACHE_DIR        => '/tmp',
         LOG_LEVEL        => 'ERROR',
+        OWNER_NAME       => '',
+        OWNER_EMAIL      => '',
+        ITEMS_PER_PAGE   => 100,
         DBNAME           => glob("~/.folderol.db"),
         TEMPLATE_MAP     => { },
-        TEMPLATE_OPTIONS => { },
+        TEMPLATE_OPTIONS => {
+            ABSOLUTE => 1,
+        },
     );
 }
 
+# ----------------------------------------------------------------------
+# normalize(%data)
+#
+# Normalizes configuration data, and ensures sane defaults.
+# ----------------------------------------------------------------------
 sub normalize {
     my $class = shift;
     my $params = (@_ && ref($_[0]) eq 'HASH') ? shift : { @_ };
@@ -46,8 +56,6 @@ sub normalize {
 
     for my $param (keys %$params) {
         if (lc($param) eq 'template_options') {
-            $new->{ TEMPLATE_OPTIONS } ||= { };
-
             for my $topt (keys %{ $params->{ $param } }) {
                 my $val = $params->{ $param }->{ $topt };
                 if (lc($val) eq 'true') {
