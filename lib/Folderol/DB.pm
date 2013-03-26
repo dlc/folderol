@@ -53,6 +53,11 @@ sub new {
     } => $class;
 }
 
+sub db {
+    my $self = shift;
+    return $self->{ DB };
+}
+
 # ----------------------------------------------------------------------
 # save_feed(\%feed_data);
 #
@@ -62,6 +67,8 @@ sub new {
 sub save_feed {
     my $self = shift;
     my $data = (@_ && ref($_[0]) eq 'HASH') ? shift : { @_ };
+    my $db = $self->db;
+    my ($sql, $feed_id, @bind);
 
     my $name     = $data->{'NAME'};
     my $url      = $data->{'URL'};
@@ -72,7 +79,11 @@ sub save_feed {
     my $modified = $data->{'MODIFIED'};
     my $tagline  = $data->{'TAGLINE'};
 
-    Folderol::Logger->debug("Saving feed $name");
+    Folderol::Logger->debug("Saving feed '$name'");
+
+#    $sql = "SELECT feed AS feed_id FROM feed WHERE url = ?";
+#    my $exists = $db->selectrow_array($sql, undef, $url);
+
 
 }
 
@@ -96,9 +107,15 @@ sub save_entry {
     my $issued   = $data->{'ISSUED'};
     my $modified = $data->{'MODIFIED'};
 
-    Folderol::Logger->debug("Saving entry $title");
+    Folderol::Logger->debug("Saving entry '$title'");
     
 
+}
+
+sub DESTROY {
+    my $self = shift;
+    $self->{ DB }->disconnect
+        if $self->{ DB };
 }
 
 # ----------------------------------------------------------------------
