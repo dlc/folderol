@@ -26,6 +26,7 @@ use vars qw($opt_V $opt_f $opt_g $opt_h);
 use File::Basename qw(basename);
 use Folderol;
 use Getopt::Std qw(getopts);
+use YAML qw(LoadFile);
 
 $ME = basename($0);
 
@@ -57,26 +58,32 @@ if ($opt_V) {
 # ----------------------------------------------------------------------
 # The main event
 # ----------------------------------------------------------------------
-my $config = $ARGV[0] || './config.ini';
-my $folderol = Folderol->new($config);
+for my $conf (@ARGV) {
+    my @sites = LoadFile($conf);
 
-if ($opt_f) {
-    for my $feed ($folderol->feeds) {
-        $feed->fetch($folderol->cache_dir) and
-            $folderol->parse($feed);
-    }
-}
-else {
-    Folderol::Logger->debug("Skipping fetch step");
-}
+    for my $site (@sites) {
+        my $folderol = Folderol->new($site);
+        Folderol::Logger->info("Loading " . $folderol->name);
 
-if ($opt_f) {
-    for my $dest ($folderol->destinations) {
-    
+        if ($opt_f) {
+            for my $feed ($folderol->feeds) {
+                $feed->fetch($folderol->cache_dir) and
+                    $folderol->parse($feed);
+            }
+        }
+        else {
+            Folderol::Logger->debug("Skipping fetch step");
+        }
+
+        if ($opt_f) {
+            for my $dest ($folderol->destinations) {
+                # ...
+            }
+        }
+        else {
+            Folderol::Logger->debug("Skipping generate step");
+        }
     }
-}
-else {
-    Folderol::Logger->debug("Skipping generate step");
 }
 
 exit;
