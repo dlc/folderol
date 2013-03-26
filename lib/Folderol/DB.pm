@@ -166,7 +166,8 @@ sub entries {
                f.link AS feed_link,
                f.selflink as feed_selflink,
                f.modified AS feed_modified,
-               f.tagline AS feed_tagline
+               f.tagline AS feed_tagline,
+               f.extra AS feed_extra
           FROM entry e, feed f
          WHERE f.feed = e.feed
       ORDER BY e.date desc
@@ -179,7 +180,16 @@ sub entries {
         for my $key (keys %$row) {
             my ($table, $field) = split /_/, $key;
             if ("feed" eq $table) {
-                $e->{ channel }->{ $field } = $row->{ $key };
+
+                if ("extra" eq $field) {
+                    $e->{ channel } = {
+                        %{ $e->{ channel } },
+                        %{ explode_extras($row->{ $key }) }
+                    };
+                }
+                else {
+                    $e->{ channel }->{ $field } = $row->{ $key };
+                }
             }
             else {
                 $e->{ $field } = $row->{ $key };
@@ -210,20 +220,27 @@ sub channels {
 
     $sth->execute;
     while (my $row = $sth->fetchrow_hashref) {
-        my %extra = map {
-            my ($n, $v) = /^(\S+?)=(\S+)$/;
-            $n =~ s/^'//; $n =~ s/'$//;
-            $v =~ s/^'//; $v =~ s/'$//;
-
-            ($n, $v);
-        } split /\s+/, (delete $row->{'extra'} or "");
-        $row->{'extra'} = \%extra;
+        $row->{'extra'} = explode_extras(delete $row->{'extra'});
 
         push @channels, $row;
     }
     $sth->finish;
 
     return wantarray ? @channels : \@channels;
+}
+
+sub explode_extras {
+    my $raw_extra = shift || "";
+
+    my %extra = map {
+        my ($n, $v) = /^(\S+?)=(\S+)$/;
+        $n =~ s/^'//; $n =~ s/'$//;
+        $v =~ s/^'//; $v =~ s/'$//;
+
+        ($n, $v);
+    } split /\s+/, $raw_extra;
+
+    return \%extra;
 }
 
 # ----------------------------------------------------------------------
