@@ -35,6 +35,7 @@ WriteMakefile(
         'DBD::SQLite'   => 1.0,
         'XML::Feed'     => 0,
         'Template'      => 2.01,
+        'YAML'          => 0.7,
     },
     'clean'         => {
         'FILES' => '$(DISTVNAME).tar$(SUFFIX) *.ppd'
