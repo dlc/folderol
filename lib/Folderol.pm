@@ -168,7 +168,7 @@ sub process {
         channels => \@channels,
     };
 
-    Folderol::Logger->debug("Generating $output from $input");
+    Folderol::Logger->info("Generating $output from $input");
     $tt->process($input, $vars, $output) || die $tt->error;
 }
 
