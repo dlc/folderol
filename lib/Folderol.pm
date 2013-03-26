@@ -138,8 +138,7 @@ sub parse {
             SUMMARY  => ($entry->summary->body or undef),
             AUTHOR   => ($entry->author or undef),
             ID       => ($entry->id or $entry->link),
-            ISSUED   => ($entry->issued or today()),
-            MODIFIED => ($entry->modified or $entry->issued or today()),
+            DATE     => ($entry->issued or $entry->modified or today()),
         );
     }
 }

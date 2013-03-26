@@ -124,19 +124,17 @@ sub save_entry {
     my $content  = $data->{'CONTENT'};
     my $summary  = $data->{'SUMMARY'};
     my $id       = $data->{'ID'};
-    my $issued   = $data->{'ISSUED'};
-    my $modified = $data->{'MODIFIED'};
+    my $date     = $data->{'DATE'};
     my $author   = $data->{'AUTHOR'};
 
     return unless ($title and $link);
-    Folderol::Logger->debug("Saving entry '$title'");
     
     $db->do("DELETE FROM entry WHERE link = ?", undef, $link);
     $db->do("INSERT INTO entry
-             (feed, title, link, content, summary, id, issued, modified, author)
+             (feed, title, link, content, summary, id, date, author)
              VALUES
-             (?, ?, ?, ?, ?, ?, ?, ?, ?)", undef,
-             $feed, $title, $link, $content, $summary, $id, $issued, $modified, $author)
+             (?, ?, ?, ?, ?, ?, ?, ?)", undef,
+             $feed, $title, $link, $content, $summary, $id, $date, $author)
         || die $db->errstr;
 }
 
@@ -159,8 +157,7 @@ sub entries {
                e.summary AS entry_summary,
                e.author AS entry_auth,
                e.id as entry_id,
-               e.issued as entry_issued,
-               e.modified as entry_modified,
+               e.date as entry_date,
                f.url AS feed_url,
                f.name AS feed_name,
                f.title AS feed_title,
@@ -171,7 +168,7 @@ sub entries {
                f.tagline AS feed_tagline
           FROM entry e, feed f
          WHERE f.feed = e.feed
-      ORDER BY e.issued desc
+      ORDER BY e.date desc
          LIMIT $num
     ");
 
@@ -215,7 +212,7 @@ sub create {
     my $class = shift;
     return (
         'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified, tagline)',
-        'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, issued, modified)',
+        'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, date)',
     );
 }
 
