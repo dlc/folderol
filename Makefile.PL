@@ -21,26 +21,25 @@ package Folderol;
 use strict;
 use ExtUtils::MakeMaker;
 
-my %clean = (
-    'FILES' => '$(DISTVNAME).tar$(SUFFIX) *.ppd'
-);
-
-my %dist = (
-    PREOP => 'perldoc -t TOML.pm > README',
-);
-
 WriteMakefile(
     'NAME'          => 'Folderol',
     'AUTHOR'        => 'Darren Chamberlain <darren@cpan.org>',
     'ABSTRACT'      => 'Fetch and Aggregate RSS and Atom feeds',
     'VERSION_FROM'  => 'lib/Folderol.pm',
-    'clean'         => \%clean,
-    'dist'          => \%dist,
-    LICENSE         => 'Perl',
-    EXE_FILES       => [ 'bin/folderol' ],
-    PREREQ_PM       => {
-        'XML::Feed'     => 0,
+    'LICENSE'       => 'Perl',
+    'EXE_FILES'     => [
+        'bin/folderol',
+    ],
+    'PREREQ_PM'     => {
         'DBI',          => 1.0,
         'DBD::SQLite'   => 1.0,
+        'XML::Feed'     => 0,
+        'Template'      => 2.01,
+    },
+    'clean'         => {
+        'FILES' => '$(DISTVNAME).tar$(SUFFIX) *.ppd'
+    },
+    'dist'          => {
+        'PREOP' => 'perldoc -t TOML.pm > README',
     },
 );
