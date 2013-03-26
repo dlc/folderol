@@ -98,23 +98,18 @@ sub destinations {
 # parse($feed)
 # 
 # Takes a Folderol::Feed object, and parses it, and saves the results in
-# the database. If the feed was not already fetched, this handles it
-# (although it might not, in the future)
+# the database.
 # ----------------------------------------------------------------------
 sub parse {
     my $self = shift;
     my $feed = shift;
-    my $file;
-    
-    # Fetch the file if it's not alread been fetched
-    unless ($file = $feed->fetched_file) {
-        $feed->fetch($self->cache_dir);
-        $file = $feed->fetched_file;
-    }
+    my $file = $feed->fetched_feed || return;
 
-    require XML::Feed;
-    Folderol::Logger->debug("Parsing $file");
-    my $p_feed = XML::Feed->parse($file);
+    my $p_feed = do {
+        require XML::Feed;
+        Folderol::Logger->debug("Parsing $file");
+        XML::Feed->parse($file);
+    };
 
     # Save the feed and the items in it
     my $feed_id = $self->db->save_feed({
@@ -128,7 +123,7 @@ sub parse {
         TAGLINE  => $p_feed->tagline,
     });
 
-    for my $entry ($feed->entries) {
+    for my $entry ($p_feed->entries) {
         $self->db->save_entry({
             FEED     => $feed_id,
             TITLE    => $entry->title,
