@@ -52,8 +52,17 @@ sub fetch {
     my $file = $self->canon_name($url);
     $self->{ FETCHED_FEED } = catfile($cdir, $file);
 
-    Folderol::Logger->debug("Storing $url as " . $self->{ FETCHED_FEED });
     $self->fetcher->getstore($url, $self->{ FETCHED_FEED });
+}
+
+# ----------------------------------------------------------------------
+# url()
+#
+# Returns link to the resource
+# ----------------------------------------------------------------------
+sub url {
+    my $self = shift;
+    return $self->{ URL } || $self->{ LINK };
 }
 
 # ----------------------------------------------------------------------
