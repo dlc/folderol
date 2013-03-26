@@ -50,7 +50,7 @@ sub debug {
     my $class = shift;
 
     if ($class->log_level >= DEBUG()) {
-        $class->_log($_[0]);
+        $class->_log('DEBUG' => $_[0]);
     }
 }
 
@@ -58,7 +58,7 @@ sub info {
     my $class = shift;
 
     if ($class->log_level >= INFO()) {
-        $class->_log($_[0]);
+        $class->_log('INFO' => $_[0]);
     }
 }
 
@@ -66,7 +66,7 @@ sub error {
     my $class = shift;
 
     if ($class->log_level >= ERROR()) {
-        $class->_log($_[0]);
+        $class->_log('ERROR' => $_[0]);
     }
 }
 
@@ -78,9 +78,10 @@ sub fatal {
 }
 
 sub _log {
-    shift;
+    my $class = shift;
+    my $level = shift;
     local $\;
-    print "$_[0]\n";
+    print "$level: $_[0]\n";
 }
 
 sub DEBUG { 10 }
