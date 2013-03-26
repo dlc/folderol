@@ -160,6 +160,7 @@ sub process {
         entries => \@entries,
     };
 
+    Folderol::Logger->debug("Generating $output from $input");
     $tt->process($input, $vars, $output) || die $tt->error;
 }
 
