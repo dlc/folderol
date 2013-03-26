@@ -82,6 +82,39 @@ sub canon_name {
     return $str;
 }
 
+# ----------------------------------------------------------------------
+# extra_fields()
+#
+# Returns a properly-formatted list of extra fields for the feed, all
+# of whcih come from the yaml
+# ----------------------------------------------------------------------
+sub extra_fields {
+    my $self = shift;
+    my %vars = ();
+
+    for my $k (keys %$self) {
+        next if $k =~ /^_/;
+        next if $k eq 'FETCHER';
+        next if $k eq 'FETCHED_FEED';
+        next if $k eq 'LINK';
+        next if $k eq 'URL';
+        next if $k eq 'NAME';
+
+        my $v = $self->{ $k };
+        next if ref($v);
+
+        $vars{ lc $k } = $v;
+    }
+
+    return join " ",
+        map {
+            my $k = $_;             $k =~ s/'//g;
+            my $v = $vars{ $_ };    $v =~ s/'//g;
+            
+            "'$k'='$v'";
+        } keys %vars;
+}
+
 sub AUTOLOAD {
     my $self = shift;
    (my $attr = $AUTOLOAD) =~ s/.*:://;

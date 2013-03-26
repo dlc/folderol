@@ -127,6 +127,7 @@ sub parse {
         SELFLINK => ($p_feed->self_link or undef),
         MODIFIED => ($p_feed->modified or today()),
         TAGLINE  => ($p_feed->tagline or undef),
+        EXTRA    => $feed->extra_fields,
     });
 
     for my $entry ($p_feed->entries) {
@@ -159,9 +160,12 @@ sub process {
     $tt = Template->new($self->template_options);
 
     my @entries = $self->db->entries($self->items_per_page);
+    my @channels = $self->db->channels;
+
     $vars = {
-        site    => $self->top_level_variables,
-        entries => \@entries,
+        site     => $self->top_level_variables,
+        entries  => \@entries,
+        channels => \@channels,
     };
 
     Folderol::Logger->debug("Generating $output from $input");

@@ -78,6 +78,7 @@ sub save_feed {
     my $selflink = $data->{'SELFLINK'};
     my $modified = $data->{'MODIFIED'};
     my $tagline  = $data->{'TAGLINE'};
+    my $extra    = $data->{'EXTRA'} || '';
 
     Folderol::Logger->debug("Saving feed '$name'");
 
@@ -85,18 +86,18 @@ sub save_feed {
     if ($feed_id = $db->selectrow_array($sql, undef, $url)) {
         # Feed exists; UPDATE
         $sql = "UPDATE feed
-                   SET name = ?, url = ?, title = ?, id = ?,
-                       link = ?, selflink = ?, modified = ?, tagline = ?
+                   SET name = ?, url = ?, title = ?, id = ?, link = ?,
+                       selflink = ?, modified = ?, tagline = ?, extra = ?
                  WHERE feed = ?";
-        $db->do($sql, undef, $name, $url, $title, $id,
-                $link, $selflink, $modified, $tagline, $feed_id) || die $db->errstr;
+        $db->do($sql, undef, $name, $url, $title, $id, $link,
+                $selflink, $modified, $tagline, $extra, $feed_id) || die $db->errstr;
     }
     else {
         # Feed doesn't exist; INSERT
         $sql = "INSERT INTO feed
-                (name, url, title, id, link, selflink, modified, tagline)
+                (name, url, title, id, link, selflink, modified, tagline, extra)
                 VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?)";
+                (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $db->do($sql, undef, $name, $url, $title, $id,
                 $link, $selflink, $modified, $tagline) || die $db->errstr;
     }
@@ -193,6 +194,39 @@ sub entries {
 }
 
 # ----------------------------------------------------------------------
+# channels()
+#
+# Get a list of all the defined channels
+# ----------------------------------------------------------------------
+sub channels {
+    my $self = shift;
+    my $db = $self->db;
+    my @channels;
+
+    my $sth = $db->prepare("
+        SELECT url, name, title, id, link, selflink, modified, tagline, extra
+          FROM feed
+         ORDER BY name desc");
+
+    $sth->execute;
+    while (my $row = $sth->selectrow_hashref) {
+        my %extra = map {
+            my ($n, $v) = /^(\S+?)=(\S+)$/;
+            $n =~ s/^'//; $n =~ s/'$//;
+            $v =~ s/^'//; $v =~ s/'$//;
+
+            ($n, $v);
+        } split /\s+/, (delete $row->{'extra'} or "");
+        $row->{'extra'} = \%extra;
+
+        push @channels, $row;
+    }
+    $sth->finish;
+
+    return wantarray ? @channels : \@channels;
+}
+
+# ----------------------------------------------------------------------
 # DESTROY
 # 
 # Ensure that the db handle is correctly closed on exit
@@ -211,7 +245,7 @@ sub DESTROY {
 sub create {
     my $class = shift;
     return (
-        'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified, tagline)',
+        'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified, tagline, extra)',
         'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, date)',
     );
 }
