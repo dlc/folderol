@@ -66,7 +66,7 @@ sub save_feed {
     my $name     = $data->{'NAME'};
     my $url      = $data->{'URL'};
     my $title    = $data->{'TITLE'};
-    my $id       = $data->{'id'};
+    my $id       = $data->{'ID'};
     my $link     = $data->{'LINK'};
     my $selflink = $data->{'SELFLINK'};
     my $modified = $data->{'MODIFIED'};
@@ -92,7 +92,7 @@ sub save_entry {
     my $link     = $data->{'LINK'};
     my $content  = $data->{'CONTENT'};
     my $summary  = $data->{'SUMMARY'};
-    my $id       = $data->{'id'};
+    my $id       = $data->{'ID'};
     my $issued   = $data->{'ISSUED'};
     my $modified = $data->{'MODIFIED'};
 
