@@ -21,7 +21,7 @@
 use strict;
 use warnings;
 use vars qw($ME);
-use vars qw($opt_V $opt_f $opt_g $opt_h);
+use vars qw($opt_V $opt_h);
 
 use File::Basename qw(basename);
 use Folderol;
@@ -32,15 +32,12 @@ $ME = basename($0);
 
 # ----------------------------------------------------------------------
 # Options:
-# -f Fetch only
-# -f Generate only
-# -h HELP
+# -h Help
+# -V Version
 #
 # By default, folderol both fetches and generates
 # ----------------------------------------------------------------------
-getopts('fghV');
-$opt_f = ! $opt_f;
-$opt_f = ! $opt_g;
+getopts('hV');
 
 # ----------------------------------------------------------------------
 # Print help message and exit, if -h, or version and exit, if -V
@@ -65,23 +62,15 @@ for my $conf (@ARGV) {
         my $folderol = Folderol->new($site);
         Folderol::Logger->info("Loading " . $folderol->name);
 
-        if ($opt_f) {
-            for my $feed ($folderol->feeds) {
-                $feed->fetch($folderol->cache_dir) and
-                    $folderol->parse($feed);
-            }
-        }
-        else {
-            Folderol::Logger->debug("Skipping fetch step");
+        Folderol::Logger->debug("Starting feed fetching");
+        for my $feed ($folderol->feeds) {
+            $feed->fetch($folderol->cache_dir) and
+                $folderol->parse($feed);
         }
 
-        if ($opt_f) {
-            for my $dest ($folderol->destinations) {
-                # ...
-            }
-        }
-        else {
-            Folderol::Logger->debug("Skipping generate step");
+        Folderol::Logger->debug("Starting page generation");
+        for my $dest ($folderol->destinations) {
+            $folderol->process($dest);
         }
     }
 }
