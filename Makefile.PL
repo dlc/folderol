@@ -39,7 +39,4 @@ WriteMakefile(
     'clean'         => {
         'FILES' => '$(DISTVNAME).tar$(SUFFIX) *.ppd'
     },
-    'dist'          => {
-        'PREOP' => 'perldoc -t TOML.pm > README',
-    },
 );
