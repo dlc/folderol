@@ -175,6 +175,7 @@ sub top_level_variables {
     my %vars = ();
 
     for my $k (keys %$self) {
+        next if $k =~ /^_/;
         next if $k eq 'DBNAME';
         next if $k eq 'LOG_LEVEL';
         next if $k eq 'DB';
