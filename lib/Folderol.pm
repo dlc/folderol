@@ -38,22 +38,18 @@ use Folderol::Logger;
 # ----------------------------------------------------------------------
 sub new {
     my $class = shift;
-    my $cfg = shift;
+    my $params = Folderol::Config->normalize(@_);
     my $self;
 
-    # Parse the config file
-    my %parsed_config = Folderol::Config->parsefile($cfg);
-
     # Set global log level
-    Folderol::Logger->log_level($parsed_config{ LOG_LEVEL });
+    Folderol::Logger->log_level($params->{ LOG_LEVEL });
 
     # Set up database
-    my $db = Folderol::DB->new($parsed_config{ DBNAME });
+    my $db = Folderol::DB->new($params->{ DBNAME });
 
     $self = bless {
-        CONFIG_FILE => $cfg,
         DB => $db,
-        %parsed_config,
+        %$params,
     } => $class;
 
     return $self;
@@ -83,7 +79,7 @@ sub destinations {
     my $self = shift;
     my $input = $self->{ INPUT };
     my $output = $self->{ OUTPUT };
-    my $tmap = $self->{ 'TEMPLATE MAP' };
+    my $tmap = $self->{ TEMPLATE_MAP };
 
     my @maps = map {
         my $out = $tmap->{ $_ };
