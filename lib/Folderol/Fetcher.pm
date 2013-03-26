@@ -37,10 +37,11 @@ sub new {
 
     my $found = 0;
     for my $p (split $Config{'path_sep'}, $ENV{'PATH'}) {
-        $found = -x catfile $p, "curl";
+        last if $found = -x catfile $p, "curl";
     }
 
-    Folderol::Logger->fatal("Can't find curl in \$PATH");
+    Folderol::Logger->fatal("Can't find curl in \$PATH")
+        unless $found;
 
     bless { } => $class;
 }
