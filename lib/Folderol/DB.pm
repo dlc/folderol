@@ -99,7 +99,7 @@ sub save_feed {
                 VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $db->do($sql, undef, $name, $url, $title, $id,
-                $link, $selflink, $modified, $tagline) || die $db->errstr;
+                $link, $selflink, $modified, $tagline, $extra) || die $db->errstr;
     }
 
     $sql = "SELECT feed AS feed_id FROM feed WHERE url = ?";
