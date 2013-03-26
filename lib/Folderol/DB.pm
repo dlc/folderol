@@ -209,7 +209,7 @@ sub channels {
          ORDER BY name desc");
 
     $sth->execute;
-    while (my $row = $sth->selectrow_hashref) {
+    while (my $row = $sth->fetchrow_hashref) {
         my %extra = map {
             my ($n, $v) = /^(\S+?)=(\S+)$/;
             $n =~ s/^'//; $n =~ s/'$//;
