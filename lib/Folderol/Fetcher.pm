@@ -22,6 +22,8 @@ use strict;
 use vars qw($USER_AGENT);
 
 use Config;
+use File::Basename qw(dirname);
+use File::Path qw(mkpath);
 use File::Spec::Functions qw(catfile);
 use Folderol::Logger;
 
@@ -71,6 +73,9 @@ sub getstore {
     my $self = shift;
     my $url = shift || return;
     my $file = shift || return;
+    my $dir = dirname($file);
+
+    -d $dir || mkpath $dir;
 
     Folderol::Logger->debug("Storing $url as $file");
     my @cmd = (qw(curl -sSLk -o), $file);
