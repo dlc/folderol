@@ -19,9 +19,6 @@ package Folderol::Config;
 # ----------------------------------------------------------------------
 
 use strict;
-use constant FEEDS => "FEEDS";
-
-use Folderol::Logger;
 
 # ----------------------------------------------------------------------
 # defaults()
@@ -30,80 +27,45 @@ use Folderol::Logger;
 # ----------------------------------------------------------------------
 sub defaults {
     return (
-        'NAME'          => '',
-        'LINK'          => '',
-        'INPUT'         => '',
-        'OUTPUT'        => '',
-        'CACHE_DIR'     => '/tmp',
-        'LOG_LEVEL'     => 'ERROR',
-        'DBNAME'        => glob("~/.folderol.db"),
-        'TEMPLATE MAP'  => { },
+        NAME             => '',
+        LINK             => '',
+        INPUT            => '',
+        OUTPUT           => '',
+        CACHE_DIR        => '/tmp',
+        LOG_LEVEL        => 'ERROR',
+        DBNAME           => glob("~/.folderol.db"),
+        TEMPLATE_MAP     => { },
+        TEMPLATE_OPTIONS => { },
     );
 }
 
-# ----------------------------------------------------------------------
-# parsefile('/path/to/file.ini')
-# ----------------------------------------------------------------------
-sub parsefile {
+sub normalize {
     my $class = shift;
-    my $file = shift;
-    my %data = $class->defaults();
+    my $params = (@_ && ref($_[0]) eq 'HASH') ? shift : { @_ };
+    my $new = { defaults() };
 
-    if (open my $fh, $file) {
-        my $cur = '';
+    for my $param (keys %$params) {
+        if (lc($param) eq 'template_options') {
+            $new->{ TEMPLATE_OPTIONS } ||= { };
 
-        while (defined(my $line = <$fh>)) {
-            $line =~ s/\s*[;#].*$//;    # Kill comments and trailing spaces
-            $line =~ s/^\s*//;          # Kill leading spaces
-
-            next unless $line =~ /./;   # Skip empty lines
-
-            # Start new section
-            if ($line =~ /^\[(.+)\]$/) {
-                my $section = "$1";
-                
-                if ($section =~ m!^https?://!) {
-                    $cur = FEEDS;
-
-                    $data{ $cur } ||= [ ];
-
-                    push @{ $data{ $cur } }, {
-                        URL => $section,
-                    }
+            for my $topt (keys %{ $params->{ $param } }) {
+                my $val = $params->{ $param }->{ $topt };
+                if (lc($val) eq 'true') {
+                    $val = 1;
+                }
+                elsif (lc($val) eq 'false') {
+                    $val = 0;
                 }
 
-                else {
-                    $cur = uc "$1";
-                    $data{ $cur } ||= { };
-                }
-
+                $new->{ TEMPLATE_OPTIONS }->{ uc $topt } = $val;
             }
-
-            # name = value settings
-            elsif ($line =~ /^(\S+)\s*=\s*(.+)$/) {
-                my $key = "$1";
-                my $val = "$2";
-
-                if ($cur) {
-                    if (FEEDS eq $cur) {
-                        $data{ $cur }->[ -1 ]->{ uc $key } = $val;
-                    }
-                    else {
-                        $data{ $cur }->{ $key } = $val;
-                    }
-                }
-                else {
-                    $data{ uc $key } = $val;
-                }
-            }
-
+        }
+        else {
+            $new->{ uc $param } = $params->{ $param };
         }
     }
-    else {
-        Folderol::Logger->fatal("Cannot open or parse config file '$file'");
-    }
 
-    return %data;
+    return $new;
 }
 
 1;
