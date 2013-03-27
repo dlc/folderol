@@ -215,10 +215,12 @@ $name - Fetch and Aggregate RSS and Atom feeds
 
 Usage:
 
-  \$ $name [-h] [-V] /path/to/config.yaml
+  \$ $name [-h] [-V] [-f] [-g] /path/to/config.yaml
 
 Parameters:
 
+  -f    Fetch only
+  -g    Generate pages only
   -h    This help
   -V    Print '$name v$VERSION' and exit
 
