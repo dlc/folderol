@@ -81,6 +81,10 @@ for my $conf (@ARGV) {
             for my $dest ($folderol->destinations) {
                 $folderol->process($dest);
             }
+
+            for my $static ($folderol->static_files) {
+                $folderol->copy_static($static)
+            }
         }
     }
 }

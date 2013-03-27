@@ -25,6 +25,7 @@ $VERSION = "0.01";
 $COPYRIGHT = 2013;
 $AUTHOR = 'Darren Chamberlain <darren@cpan.org>';
 
+use File::Copy qw(copy);
 use File::Spec::Functions qw(catfile);
 use Folderol::Config;
 use Folderol::DB;
@@ -92,6 +93,27 @@ sub destinations {
     } keys %$tmap;
 
     return wantarray ? @maps : \@maps;
+}
+
+# ----------------------------------------------------------------------
+# static_files()
+#
+# Returns a list of static files to be copies input -> output
+# ----------------------------------------------------------------------
+sub static_files {
+    my $self = shift;
+    my $input = $self->{ INPUT };
+    my $output = $self->{ OUTPUT };
+    my $static = $self->{ COPY_FILES };
+
+    my @files = map {
+        Folderol::Destination->new({
+            SRC => catfile($input, $_),
+            DEST => $output,
+        })
+    } @$static;
+
+    return wantarray ? @files : \@files;
 }
 
 
@@ -170,6 +192,20 @@ sub process {
 
     Folderol::Logger->info("Generating $output from $input");
     $tt->process($input, $vars, $output) || die $tt->error;
+}
+
+# ----------------------------------------------------------------------
+# copy_static(destination)
+# ----------------------------------------------------------------------
+sub copy_static {
+    my $self = shift;
+    my $dest = shift || return;
+    my $input = $dest->src;
+    my $output = $dest->dest;
+
+    Folderol::Logger->info("Copying $input to $output");
+    copy($input, $output) or
+        Folderol::Logger->error("Error copying $input to $output");
 }
 
 # ----------------------------------------------------------------------
