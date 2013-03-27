@@ -130,13 +130,21 @@ sub save_entry {
 
     return unless ($title and $link);
     
-    $db->do("DELETE FROM entry WHERE link = ?", undef, $link);
-    $db->do("INSERT INTO entry
-             (feed, title, link, content, summary, id, date, author)
-             VALUES
-             (?, ?, ?, ?, ?, ?, ?, ?)", undef,
-             $feed, $title, $link, $content, $summary, $id, $date, $author)
-        || die $db->errstr;
+    if (my $id = $db->do("SELECT entry FROM entry WHERE link = ?", undef, $link)) {
+        $db->do("UPDATE entry
+                    SET feed = ?, title = ?, link = ?, content = ?,
+                        summary = ?, id = ?, author = ?
+                  WHERE entry = ?", undef,
+                $feed, $title, $link, $content, $summary, $id, $author, $id);
+    }
+    else {
+        $db->do("INSERT INTO entry
+                (feed, title, link, content, summary, id, date, author)
+                VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?)", undef,
+                $feed, $title, $link, $content, $summary, $id, $date, $author);
+
+    }
 }
 
 # ----------------------------------------------------------------------
