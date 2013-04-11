@@ -1,0 +1,45 @@
+[%
+
+# This is to keep track of whether we're in a new feed in the loop
+cur_feed_id = "";
+
+-%]
+onGetRiverStream ({
+    "updatedFeeds": {
+        "updateFeed": [
+[% FOR entry IN entries;
+
+    IF cur_feed_id != entry.feed_id;
+    # New feed; display feed metadata
+%]
+            {
+                "feedUrl": "[% entry.feed_selflink %]",
+                "websiteUrl": "[% entry.feed_link %]",
+                "feedTitle": "[% entry.feed_title %]",
+                "feedDescription": "[% entry.feed_tagline %]",
+                "whenLastUpdate": "[% entry.feed_modified %]",
+                "items": [
+[%  END %]
+                    {
+                        "title": "[% entry.entry_title %]",
+                        "link": "[% entry.entry_link %]",
+                        "id": "[% entry.entry_id %]",
+                        "body": "[% entry.entry_content %]",
+                        "pubDate": "[% entry.entry_date %]",
+                    },
+[%  IF cur_feed_id != entry.feed_id %]
+                ]
+            }
+[%
+    END;
+    cur_feed_id = entry.feed_id;
+
+END;
+%]
+    }
+    "metadata": {
+        "whenGMT": "[%   USE date; date.format(format => '%a, %e %b %Y %H:%M:%S %Z', gmt => 1) %]",
+        "whenLocal": "[% USE date; date.format(format => '%a, %e %b %Y %H:%M:%S %Z', gmt => 0) %]",
+        "version": "3",
+    }
+})
