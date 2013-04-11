@@ -36,7 +36,7 @@ use Folderol::Logger;
 use POSIX qw(strftime);
 
 # ----------------------------------------------------------------------
-# new('/path/to/config.ini')
+# new(\%config)
 # ----------------------------------------------------------------------
 sub new {
     my $class = shift;
