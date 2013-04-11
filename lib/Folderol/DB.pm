@@ -22,6 +22,7 @@ use strict;
 
 use DBI;
 use DBD::SQLite;
+use File::Spec::Functions qw(canonpath);
 use Folderol::Logger;
 
 # ----------------------------------------------------------------------
@@ -34,10 +35,11 @@ sub new {
     my $dbname = shift;
 
     # Normalize path; IME sqlite does odd things with non-canonical paths
-    $dbname =~ tr!/!/!s;
+    $dbname = canonpath($dbname);
 
     my $exists = -f $dbname;
-    my $db = DBI->connect("dbi:SQLite:dbname=$dbname");
+    my $db = DBI->connect("dbi:SQLite:dbname=$dbname")
+        || Folderol::Logger->fatal("Can't connect to database '$dbname': $DBI::errstr");
 
     # Create the schema if it doesn't already exist
     unless ($exists) {
@@ -90,7 +92,8 @@ sub save_feed {
                        selflink = ?, modified = ?, tagline = ?, extra = ?
                  WHERE feed = ?";
         $db->do($sql, undef, $name, $url, $title, $id, $link,
-                $selflink, $modified, $tagline, $extra, $feed_id) || die $db->errstr;
+                $selflink, $modified, $tagline, $extra, $feed_id)
+            || Folderol::Logger->fatal($db->errstr);
     }
     else {
         # Feed doesn't exist; INSERT
@@ -99,7 +102,8 @@ sub save_feed {
                 VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $db->do($sql, undef, $name, $url, $title, $id,
-                $link, $selflink, $modified, $tagline, $extra) || die $db->errstr;
+                $link, $selflink, $modified, $tagline, $extra)
+            || Folderol::Logger->fatal($db->errstr);
     }
 
     $sql = "SELECT feed AS feed_id FROM feed WHERE url = ?";
@@ -270,7 +274,28 @@ sub DESTROY {
 sub create {
     my $class = shift;
     return (
+        # Elements in the feed table:
+        # * feed is main key (incrementing int)
+        # * url is the URL entered
+        # * title is the title the user provides in the config
+        # * id is the <id> element in the feed
+        # * link is the website url of the site which the feed syndicates
+        # * selflink is the actual URL of the feed (usually, but not necessarily, the same as url)
+        # * modified is the last modified time of the feed
+        # * tagline is the feed's description
+        # * extra is any additional bits the user provides in the config: tags, etc
         'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified, tagline, extra)',
+
+        # Elements of the entry table:
+        # * entry is the main key (incrementing int)
+        # * feed is a fk to the feed table
+        # * title is the entry <title>
+        # * link is the entry <link>
+        # * content is the entry <content> or <description>
+        # * summary is the entry <summary>
+        # * author is the entry <author>, reformatted as plain text
+        # * id is the entry <id> or <guid>
+        # * date is the entry <pubDate> or <issued> (not lastmod)
         'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, date)',
     );
 }
