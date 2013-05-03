@@ -78,7 +78,7 @@ sub save_feed {
     my $id       = $data->{'ID'};
     my $link     = $data->{'LINK'};
     my $selflink = $data->{'SELFLINK'};
-    my $modified = $data->{'MODIFIED'};
+    my @modified = $data->{'MODIFIED'} ? ($data->{'MODIFIED'}) : ();
     my $tagline  = $data->{'TAGLINE'};
     my $extra    = $data->{'EXTRA'} || '';
 
@@ -89,20 +89,24 @@ sub save_feed {
         # Feed exists; UPDATE
         $sql = "UPDATE feed
                    SET name = ?, url = ?, title = ?, id = ?, link = ?,
-                       selflink = ?, modified = ?, tagline = ?, extra = ?
+                       selflink = ?, "
+                   . (@modified ? "modified = ?, " : "")
+                   . "tagline = ?, extra = ?
                  WHERE feed = ?";
         $db->do($sql, undef, $name, $url, $title, $id, $link,
-                $selflink, $modified, $tagline, $extra, $feed_id)
+                $selflink, @modified, $tagline, $extra, $feed_id)
             || Folderol::Logger->fatal($db->errstr);
     }
     else {
         # Feed doesn't exist; INSERT
         $sql = "INSERT INTO feed
-                (name, url, title, id, link, selflink, modified, tagline, extra)
+                (name, url, title, id, link, selflink, "
+              . (@modified ? ("modified, ") : ())
+              . "tagline, extra)
                 VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $db->do($sql, undef, $name, $url, $title, $id,
-                $link, $selflink, $modified, $tagline, $extra)
+                $link, $selflink, @modified, $tagline, $extra)
             || Folderol::Logger->fatal($db->errstr);
     }
 
@@ -280,11 +284,13 @@ sub create {
         # * title is the title the user provides in the config
         # * id is the <id> element in the feed
         # * link is the website url of the site which the feed syndicates
-        # * selflink is the actual URL of the feed (usually, but not necessarily, the same as url)
-        # * modified is the last modified time of the feed
+        # * selflink is the actual URL of the feed (usually, but not
+        #   necessarily, the same as url)
+        # * modified is the last modified time of the feed; defaults to
+        #   NOW (http://alvinalexander.com/android/sqlite-default-datetime-field-current-time-now)
         # * tagline is the feed's description
         # * extra is any additional bits the user provides in the config: tags, etc
-        'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified, tagline, extra)',
+        'CREATE TABLE feed (feed INTEGER PRIMARY KEY, url, name, title, id, link, selflink, modified DATETIME DEFAULT CURRENT_TIMESTAMP, tagline, extra)',
 
         # Elements of the entry table:
         # * entry is the main key (incrementing int)
@@ -296,7 +302,7 @@ sub create {
         # * author is the entry <author>, reformatted as plain text
         # * id is the entry <id> or <guid>
         # * date is the entry <pubDate> or <issued> (not lastmod)
-        'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, date)',
+        'CREATE TABLE entry (entry INTEGER PRIMARY KEY, feed, title, link, content, summary, author, id, date DATETIME DEFAULT CURRENT_TIMESTAMP)',
     );
 }
 
