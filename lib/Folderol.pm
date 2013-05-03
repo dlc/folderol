@@ -147,7 +147,7 @@ sub parse {
         ID       => ($p_feed->id or $feed->url),
         LINK     => ($p_feed->link or $feed->url),
         SELFLINK => ($p_feed->self_link or undef),
-        MODIFIED => ($p_feed->modified or today()),
+        MODIFIED => ($p_feed->modified or undef),
         TAGLINE  => ($p_feed->tagline or undef),
         EXTRA    => $feed->extra_fields,
     });
@@ -161,7 +161,7 @@ sub parse {
             SUMMARY  => ($entry->summary->body or undef),
             AUTHOR   => ($entry->author or undef),
             ID       => ($entry->id or $entry->link),
-            DATE     => ($entry->issued or $entry->modified or today()),
+            DATE     => ($entry->issued or $entry->modified or undef),
         );
     }
 }
@@ -264,9 +264,6 @@ $name is Copyright (c) $COPYRIGHT by $AUTHOR.
 
 EOHELP
 }
-
-# Helper function
-sub today { strftime "%Y-%m-%dT%H:%M:%S", localtime time; }
 
 # ----------------------------------------------------------------------
 # AUTOLOAD - Make accessors easier. 
