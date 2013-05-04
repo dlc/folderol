@@ -172,7 +172,8 @@ sub entries {
     my @entries;
 
     my $sth = $db->prepare("
-        SELECT e.title AS entry_title,
+        SELECT e.entry AS entry_dbid,
+               e.title AS entry_title,
                e.link AS entry_link,
                e.content AS entry_content,
                e.summary AS entry_summary,
