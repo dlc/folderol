@@ -60,6 +60,11 @@ sub db {
     return $self->{ DB };
 }
 
+sub err {
+    my $self = shift;
+    return $self->db->err;
+}
+
 # ----------------------------------------------------------------------
 # save_feed(\%feed_data);
 #
@@ -100,13 +105,11 @@ sub save_feed {
     else {
         # Feed doesn't exist; INSERT
         $sql = "INSERT INTO feed
-                (name, url, title, id, link, selflink, "
-              . (@modified ? ("modified, ") : ())
-              . "tagline, extra)
+                (name, url, title, id, link, selflink, modified, tagline, extra)
                 VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $db->do($sql, undef, $name, $url, $title, $id,
-                $link, $selflink, @modified, $tagline, $extra)
+                $link, $selflink, $modified[0], $tagline, $extra)
             || Folderol::Logger->fatal($db->errstr);
     }
 
@@ -137,20 +140,22 @@ sub save_entry {
     my $author   = $data->{'AUTHOR'};
 
     return unless ($title and $link);
-    
-    if (my $id = $db->do("SELECT entry FROM entry WHERE link = ?", undef, $link)) {
+
+    if (my $id = $db->selectrow_array("SELECT entry FROM entry WHERE link = ?", undef, $link)) {
         $db->do("UPDATE entry
                     SET feed = ?, title = ?, link = ?, content = ?,
                         summary = ?, id = ?, author = ?
                   WHERE entry = ?", undef,
-                $feed, $title, $link, $content, $summary, $id, $author, $id);
+                $feed, $title, $link, $content, $summary, $id, $author, $id)
+            || Folderol::Logger->fatal($db->errstr);
     }
     else {
         $db->do("INSERT INTO entry
                 (feed, title, link, content, summary, id, date, author)
                 VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?)", undef,
-                $feed, $title, $link, $content, $summary, $id, $date, $author);
+                $feed, $title, $link, $content, $summary, $id, $date, $author)
+            || Folderol::Logger->fatal($db->errstr);
 
     }
 }
