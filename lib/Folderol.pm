@@ -150,7 +150,7 @@ sub parse {
         MODIFIED => ($p_feed->modified or undef),
         TAGLINE  => ($p_feed->tagline or undef),
         EXTRA    => $feed->extra_fields,
-    });
+    }) or die $self->db->err;
 
     for my $entry ($p_feed->entries) {
         $self->db->save_entry(
@@ -162,7 +162,7 @@ sub parse {
             AUTHOR   => ($entry->author or undef),
             ID       => ($entry->id or $entry->link),
             DATE     => ($entry->issued or $entry->modified or undef),
-        );
+        ) or die $self->db->err;
     }
 }
 
