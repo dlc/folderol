@@ -162,7 +162,7 @@ sub parse {
             AUTHOR   => ($entry->author or undef),
             ID       => ($entry->id or $entry->link),
             DATE     => ($entry->issued or $entry->modified or undef),
-        ) or die $self->db->err;
+        ); # Don't fail, just accept that it didn't import
     }
 }
 
