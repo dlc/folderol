@@ -33,6 +33,7 @@ TODO
 ====
 
 * [river.js](http://riverjs.org/) output
+* Add a [Pinboard](https://pinboard.in/howto/#saving) popup save link to generated template
 
   [Planet]: http://planetplanet.org/
   [Venus]: http://www.intertwingly.net/code/venus/
