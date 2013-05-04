@@ -145,18 +145,17 @@ sub save_entry {
         $db->do("UPDATE entry
                     SET feed = ?, title = ?, link = ?, content = ?,
                         summary = ?, id = ?, author = ?
-                  WHERE entry = ?", undef,
+                WHERE entry = ?", undef,
                 $feed, $title, $link, $content, $summary, $id, $author, $id)
             || Folderol::Logger->fatal($db->errstr);
     }
-    else {
-        $db->do("INSERT INTO entry
-                (feed, title, link, content, summary, id, date, author)
-                VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?)", undef,
-                $feed, $title, $link, $content, $summary, $id, $date, $author)
-            || Folderol::Logger->fatal($db->errstr);
 
+    else {
+        my $sql = "INSERT INTO entry (feed, title, link, content, "
+            . "summary, id, date, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        my @bind = ($feed, $title, $link, $content, $summary, $id, $date, $author);
+
+        $db->do($sql, undef, @bind) || Folderol::Logger->fatal($db->errstr);
     }
 }
 
