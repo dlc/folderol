@@ -63,7 +63,7 @@ for my $conf (@ARGV) {
         Folderol::Logger->info("Loading " . $folderol->name);
 
         if ($opt_g) {
-            Folderol::Logger->debug("Skipping feed fetching");
+            Folderol::Logger->info("Skipping feed fetching");
         }
         else {
             Folderol::Logger->debug("Starting feed fetching");
@@ -74,7 +74,7 @@ for my $conf (@ARGV) {
         }
 
         if ($opt_f) {
-            Folderol::Logger->debug("Skipping page generation");
+            Folderol::Logger->info("Skipping page generation");
         }
         else {
             Folderol::Logger->debug("Starting page generation");
@@ -86,6 +86,8 @@ for my $conf (@ARGV) {
                 $folderol->copy_static($static)
             }
         }
+
+        Folderol::Logger->info("Completed " . $folderol->name);
     }
 }
 
