@@ -40,6 +40,7 @@ sub defaults {
         GENERATOR           => "Folderol",
         GENERATOR_VERSION   => $Folderol::VERSION,
         GENERATOR_URI       => "https://github.com/dlc/folderol",
+        TAGS                => [ ],
         TEMPLATE_MAP        => { },
         TEMPLATE_OPTIONS    => {
             ABSOLUTE => 1,
