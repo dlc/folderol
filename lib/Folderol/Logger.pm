@@ -20,6 +20,8 @@ package Folderol::Logger;
 
 use strict;
 
+use POSIX qw(strftime);
+
 {
     my $log_level = ERROR();
 
