@@ -80,8 +80,10 @@ sub fatal {
 sub _log {
     my $class = shift;
     my $level = shift;
+    my $ts = strftime "%Y-%m-%dT%H:%M:%S%z", localtime;
+
     local $\;
-    print "$level: $_[0]\n";
+    print "[$ts] $level: $_[0]\n";
 }
 
 sub DEBUG { 10 }
