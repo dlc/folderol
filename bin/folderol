@@ -66,7 +66,7 @@ for my $conf (@ARGV) {
             Folderol::Logger->info("Skipping feed fetching");
         }
         else {
-            Folderol::Logger->debug("Starting feed fetching");
+            Folderol::Logger->info("Starting feed fetching");
             for my $feed ($folderol->feeds) {
                 $feed->fetch($folderol->cache_dir) and
                     $folderol->parse($feed);
@@ -77,7 +77,7 @@ for my $conf (@ARGV) {
             Folderol::Logger->info("Skipping page generation");
         }
         else {
-            Folderol::Logger->debug("Starting page generation");
+            Folderol::Logger->info("Starting page generation");
             for my $dest ($folderol->destinations) {
                 $folderol->process($dest);
             }
