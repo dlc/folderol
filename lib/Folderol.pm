@@ -25,7 +25,9 @@ $VERSION = "0.01";
 $COPYRIGHT = 2013;
 $AUTHOR = 'Darren Chamberlain <darren@cpan.org>';
 
+use File::Basename qw(dirname);
 use File::Copy qw(copy);
+use File::Path qw(make_path);
 use File::Spec::Functions qw(catfile);
 use Folderol::Config;
 use Folderol::DB;
@@ -191,7 +193,8 @@ sub process {
     };
 
     Folderol::Logger->info("Generating $output from $input");
-    $tt->process($input, $vars, $output) || die $tt->error;
+    $tt->process($input, $vars, $output) or
+        Folderol::Logger->error($tt->error);
 }
 
 # ----------------------------------------------------------------------
@@ -202,8 +205,13 @@ sub copy_static {
     my $dest = shift || return;
     my $input = $dest->src;
     my $output = $dest->dest;
+    my $outdir = dirname($output);
 
     Folderol::Logger->info("Copying $input to $output");
+
+    make_path($outdir)
+        unless -d $outdir;
+
     copy($input, $output) or
         Folderol::Logger->error("Error copying $input to $output");
 }
