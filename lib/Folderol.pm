@@ -164,11 +164,13 @@ sub parse {
                 AUTHOR   => ($entry->author or undef),
                 ID       => ($entry->id or $entry->link),
                 DATE     => ($entry->issued or $entry->modified or undef),
-            ) or Folderol::Logger->error("Error saving item " . $entry->link . ": " . $self->db->err);
+            ) or Folderol::Logger->error("Error saving item " . $entry->title .
+                                         "(" . $entry->link . "): " . $self->db->err);
         }
     }
     else {
-        Folderol::Logger->error("Error saving feed " . $feed->link . ": " . $self->db->err);
+        Folderol::Logger->error("Error saving feed " . $feed->title .
+                                "(" . $feed->link . "): " . $self->db->err);
     }
 }
 

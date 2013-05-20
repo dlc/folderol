@@ -62,7 +62,7 @@ sub db {
 
 sub err {
     my $self = shift;
-    return $self->db->err;
+    return $self->db->errstr;
 }
 
 # ----------------------------------------------------------------------
