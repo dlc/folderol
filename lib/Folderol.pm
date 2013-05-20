@@ -142,29 +142,33 @@ sub parse {
     }
 
     # Save the feed and the items in it
-    my $feed_id = $self->db->save_feed({
-        NAME     => ($feed->name or $p_feed->title),
-        URL      => $feed->url,
-        TITLE    => $p_feed->title,
-        ID       => ($p_feed->id or $feed->url),
-        LINK     => ($p_feed->link or $feed->url),
-        SELFLINK => ($p_feed->self_link or undef),
-        MODIFIED => ($p_feed->modified or undef),
-        TAGLINE  => ($p_feed->tagline or undef),
-        EXTRA    => $feed->extra_fields,
-    }) or die $self->db->err;
+    if (my $feed_id = $self->db->save_feed({
+            NAME     => ($feed->name or $p_feed->title),
+            URL      => $feed->url,
+            TITLE    => $p_feed->title,
+            ID       => ($p_feed->id or $feed->url),
+            LINK     => ($p_feed->link or $feed->url),
+            SELFLINK => ($p_feed->self_link or undef),
+            MODIFIED => ($p_feed->modified or undef),
+            TAGLINE  => ($p_feed->tagline or undef),
+            EXTRA    => $feed->extra_fields,
+        })) {
 
-    for my $entry ($p_feed->entries) {
-        $self->db->save_entry(
-            FEED     => $feed_id,
-            TITLE    => $entry->title,
-            LINK     => $entry->link,
-            CONTENT  => ($entry->content->body or $entry->summary->body or $entry->title),
-            SUMMARY  => ($entry->summary->body or undef),
-            AUTHOR   => ($entry->author or undef),
-            ID       => ($entry->id or $entry->link),
-            DATE     => ($entry->issued or $entry->modified or undef),
-        ); # Don't fail, just accept that it didn't import
+        for my $entry ($p_feed->entries) {
+            $self->db->save_entry(
+                FEED     => $feed_id,
+                TITLE    => $entry->title,
+                LINK     => $entry->link,
+                CONTENT  => ($entry->content->body or $entry->summary->body or $entry->title),
+                SUMMARY  => ($entry->summary->body or undef),
+                AUTHOR   => ($entry->author or undef),
+                ID       => ($entry->id or $entry->link),
+                DATE     => ($entry->issued or $entry->modified or undef),
+            ) or Folderol::Logger->error("Error saving item " . $entry->link . ": " . $self->db->err);
+        }
+    }
+    else {
+        Folderol::Logger->error("Error saving feed " . $feed->link . ": " . $self->db->err);
     }
 }
 
