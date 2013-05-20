@@ -19,15 +19,12 @@ package Folderol::Fetcher;
 # ----------------------------------------------------------------------
 
 use strict;
-use vars qw($USER_AGENT);
 
 use Config;
 use File::Basename qw(dirname);
 use File::Path qw(mkpath);
 use File::Spec::Functions qw(catfile);
 use Folderol::Logger;
-
-$USER_AGENT = "Folderol/$::Folderol::VERSION";
 
 # ----------------------------------------------------------------------
 # new()
@@ -59,7 +56,7 @@ sub get {
     my $self = shift;
     my $url = shift || return;
 
-    my @cmd = (qw(curl -sSLk --connect-timeout 20 -A), $USER_AGENT, $url);
+    my @cmd = (qw(curl -sSLk --connect-timeout 20 -A), "Folderol/$Folderol::VERSION", $url);
 
     `@cmd`;
 }
