@@ -77,21 +77,65 @@ sub feeds {
 # ----------------------------------------------------------------------
 # destinations()
 #
-# Returns a list of destinations: input -> output
+# Returns a list of destinations: input -> output.
+#
+# TODO If output contains the special string $TAGS, and a top-level
+# array named 'tags' exists, then a file will be created for each
+# entry in the tags array; each file will contain the contents of
+# feeds tagged with that tag
+#
+# Example:
+#
+# tags:
+#   - news
+#   - geek
+# template_map:
+#   all.tt2: index.html
+#   tags.tt2: $TAGS.html
+# feeds:
+#   - link: http://www.boston.com/feed
+#     tag: news
+#   - link: http://www.bostonglobe.com/feed
+#     tag: news
+#   - link: http://slashdot.org/feed
+#     tag: geek
+#   - link: http://freshmeat.net/feed
+#     tag: geek
+#
+# The above config will result in the following files:
+#   * index.html containing everything
+#   * news.html containing boston.com and bg.com items
+#   * geek.html containing slashdot and freshmeat items
 # ----------------------------------------------------------------------
 sub destinations {
     my $self = shift;
     my $input = $self->{ INPUT };
     my $output = $self->{ OUTPUT };
     my $tmap = $self->{ TEMPLATE_MAP };
+    my $tags = $self->{ TAGS };
 
     my @maps = map {
-        my $out = $tmap->{ $_ };
+        my $tpl = $_;
+        my $out = $tmap->{ $tpl };
 
-        Folderol::Destination->new({
-            SRC => catfile($input, $_),
-            DEST => catfile($output, $out),
-        })
+        if ($out =~ /\$TAGS/) {
+            map {
+                my $t = $_;
+               (my $o = $out) =~ s/\$TAGS/$t/g;
+
+                Folderol::Destination->new({
+                    SRC => catfile($input, $tpl),
+                    DEST => catfile($output, $o),
+                    TAG => $t,
+                })
+            } @$tags;
+        }
+        else {
+            Folderol::Destination->new({
+                SRC => catfile($input, $tpl),
+                DEST => catfile($output, $out),
+            })
+        }
     } keys %$tmap;
 
     return wantarray ? @maps : \@maps;
