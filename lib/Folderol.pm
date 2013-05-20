@@ -199,22 +199,28 @@ sub parse {
         })) {
 
         for my $entry ($p_feed->entries) {
+            # Ensure there is a title
+            my $title = $entry->title;
+            $title =~ s/^\s*//;
+            $title =~ s/\s*$//;
+            $title ||= "(Untitled)";
+
             $self->db->save_entry(
                 FEED     => $feed_id,
-                TITLE    => $entry->title,
+                TITLE    => $title,
                 LINK     => $entry->link,
-                CONTENT  => ($entry->content->body or $entry->summary->body or $entry->title),
+                CONTENT  => ($entry->content->body or $entry->summary->body or $title),
                 SUMMARY  => ($entry->summary->body or undef),
                 AUTHOR   => ($entry->author or undef),
                 ID       => ($entry->id or $entry->link),
                 DATE     => ($entry->issued or $entry->modified or undef),
-            ) or Folderol::Logger->error("Error saving item title='" . $entry->title .
-                                         "' link=<" . $entry->link . "> feed=$feed_id: " . $self->db->err);
+            ) or Folderol::Logger->error("Error saving item title=<" . $entry->title .
+                                         "> link=<" . $entry->link . "> feed=$feed_id; skipping");
         }
     }
     else {
-        Folderol::Logger->error("Error saving feed title='" . $feed->title .
-                                "' link=<" . $feed->link . ">: " . $self->db->err);
+        Folderol::Logger->error("Error saving feed title=<" . $feed->title .
+                                "> link=<" . $feed->link . ">; skipping");
     }
 }
 
