@@ -27,6 +27,8 @@ use File::Path qw(mkpath);
 use File::Spec::Functions qw(catfile);
 use Folderol::Logger;
 
+$USER_AGENT = "Folderol/$::Folderol::VERSION";
+
 # ----------------------------------------------------------------------
 # new()
 #
@@ -57,7 +59,7 @@ sub get {
     my $self = shift;
     my $url = shift || return;
 
-    my @cmd = (qw(curl -sSLk --connect-timeout 20), $url);
+    my @cmd = (qw(curl -sSLk --connect-timeout 20 -A), $USER_AGENT, $url);
 
     `@cmd`;
 }
