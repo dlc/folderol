@@ -200,10 +200,12 @@ sub parse {
 
         for my $entry ($p_feed->entries) {
             # Ensure there is a title
-            my $title = $entry->title;
+            my $title = $entry->title
+                     || substr($entry->summary->body, 0, 128)
+                     || substr($entry->content->body, 0, 128)
+                     || "(Untitled)";
             $title =~ s/^\s*//;
             $title =~ s/\s*$//;
-            $title ||= "(Untitled)";
 
             $self->db->save_entry(
                 FEED     => $feed_id,
