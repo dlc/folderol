@@ -91,13 +91,13 @@ sub getstore {
 
 # ----------------------------------------------------------------------
 # expand_link($url)
-# 
+#
 # Dereference $url, following redirects and stripping utm_ parameters
 # ----------------------------------------------------------------------
 sub expand_link {
     my $self = shift;
     my $url = shift || return;
-    my $new_url;
+    my $new_url = $url;
 
     my @cmd = (qw(curl -sSLkI --connect-timeout 20 -A), "Folderol/$Folderol::VERSION", $url);
     my @headers = `@cmd`;
@@ -108,22 +108,31 @@ sub expand_link {
         }
     }
 
-    # Clear out utm_ parameters, because fuck you
-    if ($new_url) {
-        my $u = URI->new($new_url);
-        my %q = $u->query_form;
-        my %nq;
+    return $self->strip_url_garbage($new_url);
+}
 
-        for (keys %q) {
-            $nq{ $_ } = $q{ $_ } unless /^utm_/;
-        }
+# ----------------------------------------------------------------------
+# strip_url_garbage($url)
+#
+# Strips out utm_ parameters from a URL
+# ----------------------------------------------------------------------
+sub strip_url_garbage {
+    my $self = shift;
+    my $url = shift || return;
 
-        $u->query_form(\%nq);
+    my $u = URI->new($url);
+    my %q = $u->query_form;
+    my %nq;
 
-        return $u->canonical;
+    for (keys %q) {
+        next if /^utm_/;
+
+        $nq{ $_ } = $q{ $_ };
     }
 
-    return $url;
+    $u->query_form(\%nq);
+
+    return $u->canonical;
 }
 
 1;
