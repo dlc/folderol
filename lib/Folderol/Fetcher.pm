@@ -25,6 +25,7 @@ use File::Basename qw(dirname);
 use File::Path qw(mkpath);
 use File::Spec::Functions qw(catfile);
 use Folderol::Logger;
+use URI;
 
 # ----------------------------------------------------------------------
 # new()
@@ -86,6 +87,43 @@ sub getstore {
     push @cmd, $url;
 
     0 == system(@cmd);
+}
+
+# ----------------------------------------------------------------------
+# expand_link($url)
+# 
+# Dereference $url, following redirects and stripping utm_ parameters
+# ----------------------------------------------------------------------
+sub expand_link {
+    my $self = shift;
+    my $url = shift || return;
+    my $new_url;
+
+    my @cmd = (qw(curl -sSLkI --connect-timeout 20 -A), "Folderol/$Folderol::VERSION", $url);
+    my @headers = `@cmd`;
+
+    for my $h (@headers) {
+        if ($h =~ /^Location:\s*(\S+)/i) {
+            $new_url = "$1"
+        }
+    }
+
+    # Clear out utm_ parameters, because fuck you
+    if ($new_url) {
+        my $u = URI->new($new_url);
+        my %q = $u->query_form;
+        my %nq;
+
+        for (keys %q) {
+            $nq{ $_ } = $q{ $_ } unless /^utm_/;
+        }
+
+        $u->query_form(\%nq);
+
+        return $u->canonical;
+    }
+
+    return $url;
 }
 
 1;
