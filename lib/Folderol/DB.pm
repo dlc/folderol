@@ -152,6 +152,7 @@ sub save_entry {
     }
 
     else {
+        $date ||= strftime "%Y-%m-%dT%H:%M:%S", localtime;
         my $sql = "INSERT INTO entry (feed, title, link, content, "
             . "summary, id, date, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         my @bind = ($feed, $title, $link, $content, $summary, $id, $date, $author);
