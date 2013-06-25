@@ -24,6 +24,7 @@ use DBI;
 use DBD::SQLite;
 use File::Spec::Functions qw(canonpath);
 use Folderol::Logger;
+use POSIX qw(strftime);
 
 # ----------------------------------------------------------------------
 # new('/path/to/folderol.db')
