@@ -78,7 +78,7 @@ sub getstore {
     -d $dir || mkpath $dir;
 
     Folderol::Logger->debug("Storing $url as $file");
-    my @cmd = (qw(curl -sfLk --connect-timeout 10 -o), $file);
+    my @cmd = (qw(curl -sfLk --connect-timeout 10 -o), $file, '-A', "Folderol/$Folderol::VERSION");
 
     if (-r $file) {
         push @cmd, '-z', $file;
