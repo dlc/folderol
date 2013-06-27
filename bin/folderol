@@ -25,7 +25,6 @@ use vars qw($opt_V $opt_h $opt_f $opt_g $opt_l);
 
 use File::Basename qw(basename);
 use Folderol;
-use Fcntl qw(:flock);
 use Getopt::Std qw(getopts);
 use YAML qw(LoadFile);
 
@@ -54,10 +53,19 @@ if ($opt_V) {
     exit 0;
 }
 
-my $lock;
 if ($opt_l) {
-    open $lock, $opt_l or die "Can't lock $opt_l: $!";
-    flock $lock, LOCK_EX;
+    if (-r $opt_l) {
+        open my $fh, "<", $opt_l;
+        chomp(my $pid = <$fh>);
+        close $fh;
+        print "Process already running (pid $pid)\n";
+        exit 0;
+    }
+    else {
+        open my $fh, ">", $opt_l or die "Can't open lockfile $opt_l: $!";
+        print $fh $$;
+        close $fh;
+    }
 }
 
 # ----------------------------------------------------------------------
@@ -99,8 +107,8 @@ for my $conf (@ARGV) {
     }
 }
 
-if ($opt_l && $lock) {
-    flock $lock, LOCK_UN;
+if ($opt_l) {
+    unlink $opt_l;
 }
 
 exit;
