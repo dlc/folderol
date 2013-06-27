@@ -21,10 +21,11 @@
 use strict;
 use warnings;
 use vars qw($ME);
-use vars qw($opt_V $opt_h $opt_f $opt_g);
+use vars qw($opt_V $opt_h $opt_f $opt_g $opt_l);
 
 use File::Basename qw(basename);
 use Folderol;
+use Fcntl qw(:flock);
 use Getopt::Std qw(getopts);
 use YAML qw(LoadFile);
 
@@ -36,8 +37,9 @@ $ME = basename($0);
 # -V Version
 # -f Fetch only
 # -g Generate only
+# -l Lockfile
 # ----------------------------------------------------------------------
-getopts('fghV');
+getopts('fghl:V');
 
 # ----------------------------------------------------------------------
 # Print help message and exit, if -h, or version and exit, if -V
@@ -50,6 +52,12 @@ if ($opt_h) {
 if ($opt_V) {
     print "$ME v", $Folderol::VERSION, "\n";
     exit 0;
+}
+
+my $lock;
+if ($opt_l) {
+    open $lock, $opt_l or die "Can't lock $opt_l: $!";
+    flock $lock, LOCK_EX;
 }
 
 # ----------------------------------------------------------------------
@@ -89,6 +97,10 @@ for my $conf (@ARGV) {
 
         Folderol::Logger->info("Completed " . $folderol->name);
     }
+}
+
+if ($opt_l && $lock) {
+    flock $lock, LOCK_UN;
 }
 
 exit;
